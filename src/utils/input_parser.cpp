@@ -483,15 +483,43 @@ template <class T> inline Matrix<T> get_matrix(rapidjson::Value& m) {
 
   Matrix<T> matrix(matrix_size);
   for (rapidjson::SizeType i = 0; i < matrix_size; ++i) {
-    if (!m[i].IsArray() or m[i].Size() != matrix_size) {
-      throw InputException("Unexpected matrix line length.");
-    }
-    rapidjson::Document::Array mi = m[i].GetArray();
-    for (rapidjson::SizeType j = 0; j < matrix_size; ++j) {
-      if (!mi[j].IsUint()) {
-        throw InputException("Invalid matrix entry.");
+    if (m[i].IsArray) {
+      if (m[i].Size() != matrix_size) {
+        throw InputException("Unexpected matrix line length.");
       }
-      matrix.set(i, j, mi[j].GetUint());
+      rapidjson::Document::Array mi = m[i].GetArray();
+      for (rapidjson::SizeType j = 0; j < matrix_size; ++j) {
+        if (!mi[j].IsUint()) {
+          throw InputException("Invalid matrix entry.");
+        }
+        matrix.set(i, j, mi[j].GetUint());
+      }
+    } else if (m[i].IsObject()) {
+      if (!m[i].HasMember("destinations") or 
+          !m[i]["destinations"].IsArray() or 
+          !m[i].HasMember("values") or
+          !m[i]["values"].IsArray()) {
+        throw InputException("Unexpected matrix line format.");
+      }
+
+      rapidjson::Document::Array di = m[i]["destinations"].GetArray();
+      rapidjson::Document::Array vi = m[i]["values"].GetArray();
+      
+      if (di.Size() != vi.Size()) {
+        throw InputException("Unexpected matrix line length.");
+      }
+      
+      for (rapidjson::SizeType j = 0; j < di.Size(); ++j) {
+        if (!di[j].IsUint() or 
+            di[j].GetUint() >= matrix_size or 
+            !vi[j].IsUint()) {
+          throw InputException("Invalid matrix entry.");
+        }
+        
+        matrix.set(i, di[j].GetUint(), vi[j].GetUint());
+      }
+    } else {
+      throw InputException("Unexpected matrix line format.");
     }
   }
 
@@ -595,31 +623,26 @@ void parse(Input& input, const std::string& input_str, bool geometry) {
     }
   }
 
-  if (json_input.HasMember("matrices")) {
-    if (!json_input["matrices"].IsObject()) {
-      throw InputException("Unexpected matrices value.");
-    }
-    for (auto& profile_entry : json_input["matrices"].GetObject()) {
-      if (profile_entry.value.IsObject()) {
-        if (profile_entry.value.HasMember("durations")) {
-          input.set_durations_matrix(profile_entry.name.GetString(),
-                                     get_matrix<UserDuration>(
-                                       profile_entry.value["durations"]));
-        }
-        if (profile_entry.value.HasMember("costs")) {
-          input.set_costs_matrix(profile_entry.name.GetString(),
-                                 get_matrix<UserCost>(
-                                   profile_entry.value["costs"]));
-        }
+  if (!json_input.HasMember("matrices")) {
+    throw InputException("Invalid or missing matrices.");
+  }
+
+  if (!json_input["matrices"].IsObject()) {
+    throw InputException("Unexpected matrices value.");
+  }
+  
+  for (auto& profile_entry : json_input["matrices"].GetObject()) {
+    if (profile_entry.value.IsObject()) {
+      if (profile_entry.value.HasMember("durations")) {
+        input.set_durations_matrix(profile_entry.name.GetString(),
+                                    get_matrix<UserDuration>(
+                                      profile_entry.value["durations"]));
       }
-    }
-  } else {
-    // Deprecated `matrix` key still interpreted as
-    // `matrices.DEFAULT_PROFILE.duration` for retro-compatibility.
-    if (json_input.HasMember("matrix")) {
-      input.set_durations_matrix(DEFAULT_PROFILE,
-                                 get_matrix<UserDuration>(
-                                   json_input["matrix"]));
+      if (profile_entry.value.HasMember("costs")) {
+        input.set_costs_matrix(profile_entry.name.GetString(),
+                                get_matrix<UserCost>(
+                                  profile_entry.value["costs"]));
+      }
     }
   }
 }
