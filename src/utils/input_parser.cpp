@@ -491,7 +491,7 @@ template <class T> inline Matrix<T> get_matrix(rapidjson::Value& m) {
       if (!mi[j].IsUint()) {
         throw InputException("Invalid matrix entry.");
       }
-      matrix[i][j] = mi[j].GetUint();
+      matrix.set(i, j, mi[j].GetUint());
     }
   }
 

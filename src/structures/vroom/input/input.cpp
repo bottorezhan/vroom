@@ -450,8 +450,8 @@ UserCost Input::check_cost_bound(const Matrix<UserCost>& matrix) const {
 
   for (const auto i : _matrices_used_index) {
     for (const auto j : _matrices_used_index) {
-      max_cost_per_line[i] = std::max(max_cost_per_line[i], matrix[i][j]);
-      max_cost_per_column[j] = std::max(max_cost_per_column[j], matrix[i][j]);
+      max_cost_per_line[i] = std::max(max_cost_per_line[i], matrix.get(i, j));
+      max_cost_per_column[j] = std::max(max_cost_per_column[j], matrix.get(i, j));
     }
   }
 
@@ -876,7 +876,7 @@ void Input::set_matrices(unsigned nb_thread) {
               for (Index i = 0; i < _locations.size(); ++i) {
                 const auto& loc_i = _locations[i];
                 for (Index j = 0; j < _locations.size(); ++j) {
-                  full_m[loc_i.index()][_locations[j].index()] = m[i][j];
+                  full_m.set(loc_i.index(),_locations[j].index(), m.get(i, j));
                 }
               }
 

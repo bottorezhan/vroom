@@ -182,7 +182,7 @@ HttpWrapper::get_matrix(const std::vector<Location>& locs) const {
         ++nb_unfound_from_loc[i];
         ++nb_unfound_to_loc[j];
       } else {
-        m[i][j] = get_duration_value(line[j]);
+        m.set(i, j, get_duration_value(line[j]));
       }
     }
   }

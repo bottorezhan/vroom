@@ -18,12 +18,10 @@ namespace vroom {
 class CostWrapper {
 private:
   const Duration discrete_duration_factor;
-  std::size_t duration_matrix_size;
-  const UserDuration* duration_data;
+  const Matrix<UserDuration>* duration_matrix;
 
   Cost discrete_cost_factor;
-  std::size_t cost_matrix_size;
-  const UserCost* cost_data;
+  const Matrix<UserCost>* cost_matrix;
 
   Cost _per_hour;
   bool _cost_based_on_duration;
@@ -46,12 +44,12 @@ public:
 
   Duration duration(Index i, Index j) const {
     return discrete_duration_factor *
-           static_cast<Duration>(duration_data[i * duration_matrix_size + j]);
+           static_cast<Duration>((*duration_matrix).get(i, j));
   }
 
   Cost cost(Index i, Index j) const {
     return discrete_cost_factor *
-           static_cast<Cost>(cost_data[i * cost_matrix_size + j]);
+           static_cast<Cost>((*cost_matrix).get(i, j));
   }
 
   UserCost user_cost_from_user_duration(UserDuration d) const;

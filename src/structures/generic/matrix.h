@@ -11,6 +11,7 @@ All rights reserved (see LICENSE).
 */
 
 #include <initializer_list>
+#include <unordered_map>
 
 #include "structures/typedefs.h"
 
@@ -19,20 +20,19 @@ namespace vroom {
 template <class T> class Matrix {
 
   std::size_t n;
-  std::vector<T> data;
+  std::vector<std::unordered_map<std::size_t, T>> data;
 
 public:
   Matrix();
 
   Matrix(std::size_t n);
 
-  Matrix<T> get_sub_matrix(const std::vector<Index>& indices) const;
-
-  T* operator[](std::size_t i) {
-    return data.data() + (i * n);
+  T get(std::size_t i, std::size_t j) const {
+    return data[i].at(j);
   }
-  const T* operator[](std::size_t i) const {
-    return data.data() + (i * n);
+  
+  void set(std::size_t i, std::size_t j, T value) {
+    data[i][j] = value;
   }
 
   std::size_t size() const {
