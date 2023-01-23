@@ -12,6 +12,7 @@ All rights reserved (see LICENSE).
 
 #include <initializer_list>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "structures/typedefs.h"
 
@@ -32,18 +33,16 @@ public:
   }
   
   void set(std::size_t i, std::size_t j, T value) {
+
+    if (j >= n) {
+      throw std::out_of_range;
+    }
     data[i][j] = value;
   }
 
   std::size_t size() const {
     return n;
   }
-
-#if USE_PYTHON_BINDINGS
-  T* get_data() {
-    return data.data();
-  };
-#endif
 };
 
 } // namespace vroom

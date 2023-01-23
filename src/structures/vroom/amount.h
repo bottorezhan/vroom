@@ -129,12 +129,6 @@ public:
     return *this;
   }
 
-#if USE_PYTHON_BINDINGS
-  Capacity* get_data() {
-    return elems.data();
-  };
-#endif
-
   template <class AmountExpression>
   Amount& operator+=(const AmountExpression& rhs) {
     assert(this->size() == rhs.size());
