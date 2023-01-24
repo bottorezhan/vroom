@@ -483,7 +483,7 @@ template <class T> inline Matrix<T> get_matrix(rapidjson::Value& m) {
 
   Matrix<T> matrix(matrix_size);
   for (rapidjson::SizeType i = 0; i < matrix_size; ++i) {
-    if (m[i].IsArray) {
+    if (m[i].IsArray()) {
       if (m[i].Size() != matrix_size) {
         throw InputException("Unexpected matrix line length.");
       }
