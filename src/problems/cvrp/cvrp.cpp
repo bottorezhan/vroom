@@ -27,7 +27,6 @@ All rights reserved (see LICENSE).
 #include "problems/cvrp/operators/swap_star.h"
 #include "problems/cvrp/operators/two_opt.h"
 #include "problems/cvrp/operators/unassigned_exchange.h"
-#include "problems/tsp/tsp.h"
 #include "utils/helpers.h"
 
 namespace vroom {
@@ -143,22 +142,6 @@ Solution CVRP::solve(unsigned exploration_level,
                      unsigned nb_threads,
                      const Timeout& timeout,
                      const std::vector<HeuristicParameters>& h_param) const {
-  if (_input.vehicles.size() == 1 and !_input.has_skills() and
-      _input.zero_amount().size() == 0 and !_input.has_shipments() and
-      (_input.jobs.size() <= _input.vehicles[0].max_tasks) and
-      _input.vehicles[0].steps.empty()) {
-    // This is a plain TSP, no need to go through the trouble below.
-    std::vector<Index> job_ranks(_input.jobs.size());
-    std::iota(job_ranks.begin(), job_ranks.end(), 0);
-
-    TSP p(_input, job_ranks, 0);
-
-    RawRoute r(_input, 0, 0);
-    r.set_route(_input, p.raw_solve(nb_threads, timeout));
-
-    return utils::format_solution(_input, {r});
-  }
-
   return VRP::solve<RawRoute, cvrp::LocalSearch>(exploration_level,
                                                  nb_threads,
                                                  timeout,
